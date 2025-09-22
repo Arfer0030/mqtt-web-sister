@@ -8,7 +8,7 @@ export const useMqtt = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState({});
 
-  // --- Publish Pesan ---
+  // Publish 
   const publish = useCallback((topic, message) => {
     if (clientRef.current && clientRef.current.connected) {
       const msgData = {
@@ -36,7 +36,7 @@ export const useMqtt = () => {
     }
   }, []);
 
-  // --- Subscribe ke topic ---
+  // Subscribe ke topic
   const subscribe = useCallback((topic) => {
     if (clientRef.current && clientRef.current.connected) {
       clientRef.current.subscribe(topic, (err) => {
@@ -50,9 +50,9 @@ export const useMqtt = () => {
   }, []);
 
   useEffect(() => {
-    if (clientRef.current) return; // hindari koneksi ganda
+    if (clientRef.current) return; 
 
-    const brokerUrl = "ws://34.169.63.96:8083"; // ✅ port WebSocket Mosquitto
+    const brokerUrl = "ws://34.169.63.96:8083"; 
     const clientId = `mqttjs_${Math.random().toString(16).slice(3)}`;
 
     const options = {
@@ -63,7 +63,7 @@ export const useMqtt = () => {
       password: "windows10",
       reconnectPeriod: 5000,
       keepalive: 60,
-      protocolVersion: 4, // MQTT 3.1.1
+      protocolVersion: 4, 
       will: {
         topic: "clients/disconnect",
         payload: clientId,
@@ -76,9 +76,9 @@ export const useMqtt = () => {
     const client = mqtt.connect(brokerUrl, options);
     clientRef.current = client;
 
-    // --- Event Listeners ---
+    // Event Listeners
     client.on("connect", () => {
-      console.log("✅ Connected to MQTT broker");
+      console.log("Connected to MQTT broker");
       setIsConnected(true);
     });
 
@@ -90,7 +90,7 @@ export const useMqtt = () => {
         sender: "other",
         timestamp: new Date().toLocaleTimeString(),
       };
-      console.log(`📩 [${topic}] ${msgData.message}`);
+      console.log(`[${topic}] ${msgData.message}`);
 
       setMessages((prev) => ({
         ...prev,
@@ -99,28 +99,28 @@ export const useMqtt = () => {
     });
 
     client.on("error", (err) => {
-      console.error("❌ Connection error:", err);
+      console.error("Connection error:", err);
       setIsConnected(false);
       client.end();
     });
 
     client.on("close", () => {
-      console.log("🔌 Connection closed");
+      console.log("Connection closed");
       setIsConnected(false);
     });
 
     client.on("offline", () => {
-      console.log("📴 Client offline");
+      console.log("Client offline");
       setIsConnected(false);
     });
 
     client.on("reconnect", () => {
-      console.log("♻️ Reconnecting...");
+      console.log("Reconnecting...");
     });
 
     return () => {
       if (clientRef.current) {
-        console.log("👋 Ending MQTT connection");
+        console.log("Ending MQTT connection");
         clientRef.current.end();
         clientRef.current = null;
       }
