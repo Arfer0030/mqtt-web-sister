@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MQTT Web Client</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 2rem; }
+        input { margin-bottom: 0.5rem; padding: 0.5rem; width: 300px; }
+        button { padding: 0.5rem 1rem; margin: 0.25rem; }
+        #messages { margin-top: 1rem; border: 1px solid #ccc; padding: 1rem; height: 300px; overflow-y: scroll; background-color: #f9f9f9; }
+        #status { font-weight: bold; }
+        .message { border-bottom: 1px solid #ddd; padding: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>MQTT Web Client</h1>
+    <p>Status: <span id="status">Menghubungkan...</span></p>
+
+    <div>
+        <h3>Subscribe</h3>
+        <input type="text" id="sub-topic" placeholder="Topic untuk subscribe" value="sistercoba">
+        <button onclick="subscribe()">Subscribe</button>
+    </div>
+
+    <div>
+        <h3>Publish</h3>
+        <input type="text" id="pub-topic" placeholder="Topic untuk publish" value="sistercoba">
+        <input type="text" id="pub-message" placeholder="Pesan" value="ok">
+        <button onclick="publish()">Publish</button>
+    </div>
+
+    <h3>Pesan Diterima:</h3>
+    <div id="messages"></div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const messagesEl = document.getElementById('messages');
+        const subTopicEl = document.getElementById('sub-topic');
+        const pubTopicEl = document.getElementById('pub-topic');
+        const pubMessageEl = document.getElementById('pub-message');
+
+        // Hubungkan ke server client via WebSocket
+        const ws = new WebSocket(`ws://${window.location.host}`);
+
+        ws.onopen = () => {
+            statusEl.textContent = 'Terhubung';
+            statusEl.style.color = 'green';
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Skip welcome message
+                if (data.type === 'welcome') return;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `
+                    <strong>[${data.topic}]:</strong> ${data.message}
+                    <br><small>${data.timestamp || new Date().toLocaleString()}</small>
+                `;
+                messagesEl.appendChild(messageDiv);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+                
+            } catch (e) {
+                console.error('Error parsing message:', e);
+            }
+        };
+
+        ws.onclose = () => {
+            statusEl.textContent = 'Terputus';
+            statusEl.style.color = 'red';
+        };
+
+        ws.onerror = () => {
+            statusEl.textContent = 'Error!';
+            statusEl.style.color = 'red';
+        };
+
+        function subscribe() {
+            const topic = subTopicEl.value.trim();
+            if (!topic) {
+                alert('Topic subscribe tidak boleh kosong!');
+                return;
+            }
+            
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    action: 'subscribe',
+                    topic: topic
+                }));
+            } else {
+                alert('WebSocket not connected!');
+            }
+        }
+
+        function publish() {
+            const topic = pubTopicEl.value.trim();
+            const message = pubMessageEl.value.trim();
+            
+            if (!topic || !message) {
+                alert('Topic dan Pesan tidak boleh kosong!');
+                return;
+            }
+            
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    action: 'publish',
+                    topic: topic,
+                    message: message
+                }));
+            } else {
+                alert('WebSocket not connected!');
+            }
+        }
+    </script>
+</body>
+</html>
