@@ -1,4 +1,6 @@
 Tugas Sistem Terdistribusi - Messaging Service menggunakan MQTT
+- Adika Nugraha 
+- Aufa Rafly F
 
 # Client Server dan Web untuk menghubungkan MQTT dengan Browser memakai WebSocket
 
