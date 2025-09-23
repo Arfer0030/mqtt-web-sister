@@ -1,7 +1,7 @@
 {
-  "name": "mqtt-web-bridge",
+  "name": "mqtt-web-sister",
   "version": "1.0.0",
-  "description": "MQTT WebSocket Bridge Server",
+  "description": "MQTT Client Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
