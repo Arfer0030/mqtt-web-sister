@@ -3,34 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>MQTT Web Client</title>
-    <style>
-        body { font-family: system-ui, -apple-system, sans-serif; margin: 2rem; }
-        input { margin-bottom: 0.5rem; padding: 0.5rem; width: 300px; }
-        button { padding: 0.5rem 1rem; margin: 0.25rem; }
-        #messages { margin-top: 1rem; border: 1px solid #ccc; padding: 1rem; height: 300px; overflow-y: scroll; background-color: #f9f9f9; }
-        #status { font-weight: bold; }
-        .message { border-bottom: 1px solid #ddd; padding: 5px 0; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>MQTT Web Client</h1>
-    <p>Status: <span id="status">Menghubungkan...</span></p>
+    <div class="container">
+        <header class="header">
+            <h1>MQTT Web Client</h1>
+            <p class="status">Status : <span id="status">Menghubungkan...</span></p>
+        </header>
 
-    <div>
-        <h3>Subscribe</h3>
-        <input type="text" id="sub-topic" placeholder="Topic untuk subscribe" value="sistercoba">
-        <button onclick="subscribe()">Subscribe</button>
+        <div class="main-content">
+            <div class="controls-panel">
+                <div class="control-section">
+                    <h3>Subscribe Topic</h3>
+                    <div class="input-group">
+                        <label class="input-label">Topic</label>
+                        <input type="text" id="sub-topic" placeholder="Masukkan nama topic untuk subscribe" value="sistercoba">
+                    </div>
+                    <button onclick="subscribe()">Subscribe</button>
+                </div>
+
+                <div class="control-section">
+                    <h3>Publish Message</h3>
+                    <div class="input-group">
+                        <label class="input-label">Topic</label>
+                        <input type="text" id="pub-topic" placeholder="Masukkan nama topic untuk publish" value="sistercoba">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Message</label>
+                        <input type="text" id="pub-message" placeholder="Masukkan isi pesan yang akan dikirim" value="ok">
+                    </div>
+                    <button onclick="publish()">Publish</button>
+                </div>
+            </div>
+
+            <div class="messages-panel">
+                <h3>Message :</h3>
+                <div id="messages"></div>
+            </div>
+        </div>
     </div>
-
-    <div>
-        <h3>Publish</h3>
-        <input type="text" id="pub-topic" placeholder="Topic untuk publish" value="sistercoba">
-        <input type="text" id="pub-message" placeholder="Pesan" value="ok">
-        <button onclick="publish()">Publish</button>
-    </div>
-
-    <h3>Pesan Diterima:</h3>
-    <div id="messages"></div>
 
     <script>
         const statusEl = document.getElementById('status');
@@ -39,26 +51,28 @@
         const pubTopicEl = document.getElementById('pub-topic');
         const pubMessageEl = document.getElementById('pub-message');
 
-        // Hubungkan ke server client via WebSocket
+         // Konek ke server client via WebSocket
         const ws = new WebSocket(`ws://${window.location.host}`);
 
         ws.onopen = () => {
             statusEl.textContent = 'Terhubung';
-            statusEl.style.color = 'green';
+            statusEl.style.color = '#4CAF50';
         };
 
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 
-                // Skip welcome message
                 if (data.type === 'welcome') return;
                 
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message';
                 messageDiv.innerHTML = `
-                    <strong>[${data.topic}]:</strong> ${data.message}
-                    <br><small>${data.timestamp || new Date().toLocaleString()}</small>
+                    <div class="message-header">
+                        <strong class="topic-name">[${data.topic}]</strong>
+                        <small class="timestamp">${data.timestamp || new Date().toLocaleString()}</small>
+                    </div>
+                    <div class="message-content">${data.message}</div>
                 `;
                 messagesEl.appendChild(messageDiv);
                 messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -70,14 +84,15 @@
 
         ws.onclose = () => {
             statusEl.textContent = 'Terputus';
-            statusEl.style.color = 'red';
+            statusEl.style.color = '#FF6B9D';
         };
 
         ws.onerror = () => {
             statusEl.textContent = 'Error!';
-            statusEl.style.color = 'red';
+            statusEl.style.color = '#FF6B9D';
         };
 
+        // Fungsi untuk button subscribe
         function subscribe() {
             const topic = subTopicEl.value.trim();
             if (!topic) {
@@ -94,7 +109,8 @@
                 alert('WebSocket not connected!');
             }
         }
-
+        
+        // Fungsi untuk button publish
         function publish() {
             const topic = pubTopicEl.value.trim();
             const message = pubMessageEl.value.trim();
