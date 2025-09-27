@@ -52,7 +52,7 @@
         const pubMessageEl = document.getElementById('pub-message');
 
          // Konek ke server client via WebSocket
-        const ws = new WebSocket(`ws://${window.location.host}`);
+        const ws = new WebSocket(`wss://${window.location.host}`);
 
         ws.onopen = () => {
             statusEl.textContent = 'Terhubung';
